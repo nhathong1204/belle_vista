@@ -1,0 +1,95 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block meta_header %}
+    <title>Blog - Belle Vista</title>
+    <meta name="description" content="Blog - Belle Vista">
+    <meta property="og:title" content="Blog - Belle Vista">
+    <meta property="og:description" content="Blog - Belle Vista">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bvagency.org">
+    <meta property="og:image" content="{% static 'img/logo/logo.png' %}" />
+
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+    <!-- Place favicon.ico in the root Internist, General Practitonery -->
+{% endblock meta_header %}
+{% block content %}
+<!-- breadcrumb-area -->
+<section class="breadcrumb-area d-flex align-items-center" style="background-image:url({% static 'img/an-bg/an-bg06.png' %})">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
+                <div class="breadcrumb-wrap text-center">
+                    <div class="breadcrumb-title mb-30">
+                        <h2>Blogs</h2>                                   
+                    </div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'core:index' %}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Blogs</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb-area-end -->
+<!-- inner-blog -->
+<section class="inner-blog pt-30">
+    <div class="container">
+        {% if blogs %}
+        <div class="row">
+            <div class="col-lg-12">
+                {% for blog in blogs  %}
+                <div class="bsingle__post mb-50">
+                    <div class="bsingle__post-thumb">
+                        {% if blog.image %}
+                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="bsingle__content">
+                        <div class="meta-info">
+                            <ul>
+                                <li><a href="javascript:void(0)">  <i class="far fa-calendar-alt"></i>  {{ blog.created_at|date:"d M, Y" }}</a></li>
+                                <li><a href="javascript:void(0)"><i class="far fa-user"></i>by Admin</a></li>
+                            </ul>
+                        </div>
+                        <h2><a href="{% url 'core:blog-detail' blog.slug %}">{{ blog.title|truncatewords:80 }}</a></h2>
+                        <p>{{ blog.mini_description|truncatewords:30 }}</p>
+                        <div class="slider-btn">   
+                            <a href="{% url 'core:blog-detail' blog.slug %}" class="btn ss-btn" data-animation="fadeInRight" data-delay=".8s">Read More <i class="fas fa-chevron-right"></i></a>				
+                        </div> 
+                    </div>
+                </div>
+                {% endfor %}
+                {% if total_blogs > 3 %}
+                <div class="pagination-wrap mb-50">
+                    <nav>
+                        <ul class="pagination">
+                            {% if blogs.has_previous %}
+                                <li class="page-item"><a href="?page={{ blogs.previous_page_number }}"><i class="fas fa-angle-double-left"></i></a></li>
+                            {% endif %}
+                            {% for num in blogs.paginator.page_range %}
+                                {% if blogs.number == num %}
+                                    <li class="page-item active"><a href="javascript:void(0)">{{ num }}</a></li>
+                                {% elif num > blogs.number|add:'-3' and num < blogs.number|add:'3' %}
+                            <li class="page-item"><a href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            {% if blogs.has_next %}
+                                <li class="page-item"><a href="?page={{ blogs.next_page_number }}"><i class="fas fa-angle-double-right"></i></a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+<!-- inner-blog-end -->
+{% endblock content %}

@@ -1,0 +1,84 @@
+import mimetypes
+import os
+from django.shortcuts import render
+from core.models import Blog, ContactUs
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse, HttpResponse, Http404
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
+from django.conf import settings
+
+# Create your views here.
+def index(request):
+    return render(request, "core/index.html")
+
+def list_blogs(request):
+    list_blogs = Blog.objects.filter(is_active=True).order_by("-created_at")
+    total_blogs  = list_blogs.count()
+    page = request.GET.get("page", 1)
+    paginator = Paginator(list_blogs, 3)
+    try:
+        blogs = paginator.page(page)
+    except EmptyPage:
+        blogs = paginator.page(paginator.num_pages)
+    except PageNotAnInteger:
+        blogs = paginator.page(1)
+    context = {
+        "blogs": blogs,
+        "total_blogs": total_blogs,
+    }
+    return render(request, "core/list_blogs.html", context)
+
+def blog_detail(request, slug):
+    blog = Blog.objects.filter(slug=slug, is_active=True).first()
+    return render(request, "core/blog-detail.html", {"blog": blog})
+
+def ajax_contact_form(request):
+    first_name = request.GET.get("first_name")
+    last_name = request.GET.get("last_name")
+    full_name = f"{first_name} {last_name}"
+    email = request.GET.get("email")
+    subject = request.GET.get("subject")
+    message = request.GET.get("message")
+    
+    from_email = settings.DEFAULT_FROM_EMAIL
+    contact, _ = ContactUs.objects.get_or_create(full_name=full_name, email=email, subject=subject, message=message)
+    context = {
+        "full_name": full_name,
+        "email": email,
+        "subject": subject,
+        "message": message
+    }
+    email_template = "emails/contact_email_template.html"
+    message = render_to_string(email_template, context)
+    to_email = settings.ADMIN_EMAIL
+    mail = EmailMessage(subject, message, from_email, to=[to_email])
+    mail.send()
+    
+    return JsonResponse({
+        "success": True,
+        "message": " Message sent successfully."
+    })
+
+
+def serve_media(request, path):
+    # Specify the full path of the file
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        raise Http404("Media file not found")
+    
+    # Determine content type
+    content_type, encoding = mimetypes.guess_type(file_path)
+    content_type = content_type or "application/octet-stream"
+    
+    # Read file and return response
+    with open(file_path, "rb") as f:
+        response = HttpResponse(f.read(), content_type=content_type)
+        if encoding:
+            response["Content-Encoding"] = encoding
+        return response
+
+def error(request, exception):
+    return render(request, 'error.html', {'message': exception})
