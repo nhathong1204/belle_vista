@@ -82,3 +82,6 @@ def serve_media(request, path):
 
 def error(request, exception):
     return render(request, 'error.html', {'message': exception})
+
+def privacy_policy(request):
+    return render(request, "core/privacy_policy.html")
