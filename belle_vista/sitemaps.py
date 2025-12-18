@@ -18,7 +18,7 @@ class StaticViewSitemap(Sitemap):
 
     def items(self):
         # List of static URL names
-        return ["core:index",]
+        return ["core:index", "core:privacy-policy"]
 
     def location(self, item):
         return reverse(item)
