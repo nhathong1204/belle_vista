@@ -240,7 +240,7 @@
         <div class="row">
             {% for blog in blogs  %}
             <div class="col-lg-4 col-md-12">
-                <div class="single-post mb-30" >
+                <div class="single-post" >
                     <div class="blog-thumb">
                         <a href="{% url 'core:blog-detail' blog.slug %}">
                             {% if blog.image %}
